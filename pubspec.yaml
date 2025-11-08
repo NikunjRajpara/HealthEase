@@ -1,0 +1,58 @@
+name: health_ease
+description: Medicine ordering app (Health Ease)
+publish_to: "none"
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  google_sign_in: ^6.2.1
+
+  # State management
+  flutter_riverpod: ^2.0.0
+
+  # Router
+  go_router: ^14.0.0
+
+  # Networking & utils
+  dio: ^5.0.0
+  equatable: ^2.0.5
+  intl: ^0.19.0
+  flutter_dotenv: ^5.1.0
+
+  # Storage (choose one; keeping prefs for now)
+  shared_preferences: ^2.2.0
+
+  # Icons / UI
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  # Code gen (enable later if you add freezed/annotations)
+  build_runner: ^2.4.0
+
+# App assets (add your design images, logos here)
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/images/banner.gif
+    - assets/images/payday_sale.png
+    - assets/images/cardiac_care.png
+    - assets/images/diabetes_care.png
+    - assets/images/hair_care.png
+    - assets/images/pharmacy_care.png
+    - assets/images/skin_care.png
+    - assets/images/consult_doctor.png
+    - assets/images/men_care.png
+    - assets/images/digestive_care.png
+    - assets/images/pain_relief.png
+    - assets/images/fitness_care.png
+    - assets/images/signup_health.png
+    - assets/images/login_doctor.png
