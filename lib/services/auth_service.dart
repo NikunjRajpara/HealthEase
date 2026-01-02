@@ -14,6 +14,21 @@ class AuthService {
   Stream<User?> get userChanges => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
 
+  /// ✅ NEW: simple helpers used by cart/orders
+  bool get isLoggedIn => _auth.currentUser != null;
+
+  /// ✅ NEW: safe UID getter
+  String get uid {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'not-authenticated',
+        message: 'User must be logged in',
+      );
+    }
+    return user.uid;
+  }
+
   // ---------------------------------------------------------------------------
   // Email / Password
   // ---------------------------------------------------------------------------
@@ -36,7 +51,10 @@ class AuthService {
     required String email,
     required String password,
   }) {
-    return _auth.signInWithEmailAndPassword(email: email, password: password);
+    return _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
   }
 
   Future<void> sendPasswordReset(String email) {
@@ -48,13 +66,11 @@ class AuthService {
   // ---------------------------------------------------------------------------
   Future<UserCredential> signInWithGoogle() async {
     if (kIsWeb) {
-      // Web: use popup with provider
       final provider = GoogleAuthProvider()
         ..addScope('email')
         ..setCustomParameters({'prompt': 'select_account'});
       return await _auth.signInWithPopup(provider);
     } else {
-      // Android/iOS: use google_sign_in package
       final googleSignIn = GoogleSignIn(
         scopes: const ['email', 'profile'],
       );
@@ -112,11 +128,9 @@ class AuthService {
   // ---------------------------------------------------------------------------
   Future<UserCredential> signInWithGitHub() async {
     if (kIsWeb) {
-      // Web: use popup with provider
       final provider = GithubAuthProvider();
       return await _auth.signInWithPopup(provider);
     } else {
-      // Android/iOS: use OAuth flow
       final provider = GithubAuthProvider();
       return await _auth.signInWithProvider(provider);
     }
@@ -145,7 +159,6 @@ class AuthService {
   // Sign out
   // ---------------------------------------------------------------------------
   Future<void> signOut() async {
-    // Sign out from Firebase (and optionally from GoogleSignIn on mobile)
     if (!kIsWeb) {
       try {
         await GoogleSignIn().signOut();

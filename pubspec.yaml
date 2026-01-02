@@ -10,6 +10,9 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
   google_sign_in: ^6.2.1
+  google_maps_flutter: ^2.5.0
+  geolocator: ^11.0.0
+  cloud_firestore: ^5.6.12
 
   # State management
   flutter_riverpod: ^2.0.0

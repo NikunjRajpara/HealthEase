@@ -22,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscure = true;
   bool _loading = false;
   bool _googleLoading = false;
-  bool _githubLoading = false;
 
   @override
   void dispose() {
@@ -74,34 +73,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Reset failed: ${e.message ?? e.code}')),
       );
-    }
-  }
-
-  // ---------------- GITHUB SIGN-IN ----------------
-  Future<void> _signInWithGitHub() async {
-    setState(() => _githubLoading = true);
-    try {
-      final cred = await FirebaseAuth.instance.signInWithProvider(GithubAuthProvider());
-
-      if (!mounted) return;
-      Navigator.pop(context); // back to previous/profile
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Welcome, ${cred.user?.displayName ?? 'there'}!')),
-      );
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('GitHub sign-in failed: ${e.message ?? e.code}')),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('GitHub sign-in failed: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _githubLoading = false);
     }
   }
 
@@ -274,23 +245,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               )
                             : const Icon(Icons.g_mobiledata_rounded, size: 28),
                         label: const Text('Continue with Google'),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: FilledButton.tonalIcon(
-                        onPressed: _githubLoading ? null : _signInWithGitHub,
-                        icon: _githubLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.computer_outlined),
-                        label: const Text('Continue with GitHub'),
                       ),
                     ),
                   ],
