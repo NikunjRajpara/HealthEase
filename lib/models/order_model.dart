@@ -10,11 +10,15 @@ class OrderModel {
   final double total;
   final List<OrderItem> items;
 
-  // 🔴 NEW FIELDS
+  // 🔴 Customer details
   final String customerName;
   final String deliveryAddress;
 
-  // Existing
+  // 🔴 Payment details (NEW – optional, safe)
+  final String paymentStatus; // paid | unpaid
+  final String? paymentId; // Razorpay paymentId
+
+  // Rider
   final String? riderId;
 
   OrderModel({
@@ -26,9 +30,15 @@ class OrderModel {
     required this.total,
     required this.items,
 
-    // 🔴 NEW (required for new orders)
+    // Customer
     required this.customerName,
     required this.deliveryAddress,
+
+    // 🔴 NEW (safe defaults)
+    this.paymentStatus = 'unpaid',
+    this.paymentId,
+
+    // Rider
     this.riderId,
   });
 
@@ -43,9 +53,13 @@ class OrderModel {
       total: (map['total'] as num).toDouble(),
       items: (map['items'] as List).map((e) => OrderItem.fromMap(e)).toList(),
 
-      // 🔴 SAFE FALLBACKS (important for old orders)
+      // Customer (safe for old orders)
       customerName: map['customerName'] ?? '',
       deliveryAddress: map['deliveryAddress'] ?? '',
+
+      // 🔴 Payment (safe for old orders)
+      paymentStatus: map['paymentStatus'] ?? 'unpaid',
+      paymentId: map['paymentId'],
 
       riderId: map['riderId'],
     );
@@ -56,14 +70,17 @@ class OrderModel {
     return {
       'userId': userId,
       'paymentMethod': paymentMethod,
+      'paymentStatus': paymentStatus,
+      'paymentId': paymentId,
       'total': total,
-      'status': status, // MUST be 'pending' initially
+      'status': status,
       'items': items.map((e) => e.toMap()).toList(),
 
-      // 🔴 NEW FIELDS SAVED
+      // Customer
       'customerName': customerName,
       'deliveryAddress': deliveryAddress,
 
+      // Rider
       'riderId': riderId,
       'createdAt': FieldValue.serverTimestamp(),
     };

@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../services/cart_service.dart';
-import '../services/orders_service.dart';
-import '../models/order_model.dart';
-import '../models/order_item.dart';
+import 'prescription_details_screen.dart';
 
 class DeliveryDetailsScreen extends StatefulWidget {
   const DeliveryDetailsScreen({super.key});
@@ -15,63 +13,13 @@ class DeliveryDetailsScreen extends StatefulWidget {
 
 class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final _nameCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
 
-  bool _loading = false;
-
   final cart = CartService.instance;
-  final ordersService = OrdersService.instance;
   final auth = FirebaseAuth.instance;
 
-  Future<void> _placeOrder() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-
-    final user = auth.currentUser;
-    if (user == null) return;
-
-    setState(() => _loading = true);
-
-    try {
-      final order = OrderModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: user.uid,
-        date: DateTime.now(),
-        paymentMethod: 'Cash on Delivery',
-        status: 'pending',
-        total: cart.subtotal,
-        customerName: _nameCtrl.text.trim(),
-        deliveryAddress: _addressCtrl.text.trim(),
-        items: cart.items
-            .map(
-              (e) => OrderItem(
-                name: e.product.name,
-                qty: e.qty,
-                price: e.product.price,
-              ),
-            )
-            .toList(),
-      );
-
-      await ordersService.addOrder(order);
-      cart.clear();
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Order placed successfully')),
-      );
-
-      Navigator.popUntil(context, (r) => r.isFirst);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to place order: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -80,6 +28,45 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
     super.dispose();
   }
 
+  // ---------------------------------------------------------------------------
+  // SUBMIT → GO TO PRESCRIPTION SCREEN (NO ORDER CREATION HERE)
+  // ---------------------------------------------------------------------------
+  void _submit() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final user = auth.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please login to continue')),
+      );
+      return;
+    }
+
+    if (cart.items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Your cart is empty')),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PrescriptionDetailsScreen(
+          customerName: _nameCtrl.text.trim(),
+          deliveryAddress: _addressCtrl.text.trim(),
+        ),
+      ),
+    ).then((_) {
+      if (mounted) setState(() => _loading = false);
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // UI
+  // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,10 +102,10 @@ class _DeliveryDetailsScreenState extends State<DeliveryDetailsScreen> {
                 width: double.infinity,
                 height: 52,
                 child: FilledButton(
-                  onPressed: _loading ? null : _placeOrder,
+                  onPressed: _loading ? null : _submit,
                   child: _loading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Place Order (COD)'),
+                      : const Text('Continue'),
                 ),
               ),
             ],

@@ -9,13 +9,27 @@ class OrdersService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  /// 🔹 ADD ORDER → GLOBAL orders collection
+  /// 🔹 ADD ORDER → GLOBAL orders collection (existing, DO NOT BREAK)
   Future<void> addOrder(OrderModel order) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not logged in');
 
     await _firestore.collection('orders').doc(order.id).set({
       ...order.toMap(),
+      'userId': user.uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// 🔴 NEW: ADD ORDER FROM PREPARED MAP (for prescription flow)
+  /// Used when extra fields (doctorName, prescription, imageUrl) are added
+  /// Does NOT affect existing flows
+  Future<void> addOrderFromMap(Map<String, dynamic> data) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    await _firestore.collection('orders').add({
+      ...data,
       'userId': user.uid,
       'createdAt': FieldValue.serverTimestamp(),
     });

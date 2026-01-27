@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'my_consultations_screen.dart';
 
 /// PUBLIC ENTRY: the screen we mount from bottom navigation
 
@@ -25,7 +28,7 @@ class _SpecialistsGridPageState extends State<SpecialistsGridPage> {
     'Medicine',
     'Cardiology',
     'Dermatology',
-    'Pediatrics'
+    'Pediatrics',
   ];
 
   late List<Specialist> specialists;
@@ -67,11 +70,19 @@ class _SpecialistsGridPageState extends State<SpecialistsGridPage> {
             Text('Specialist'),
           ],
         ),
-        actions: const [
-          Icon(Icons.search, size: 22),
-          SizedBox(width: 14),
-          Icon(Icons.chat_bubble_outline, size: 22),
-          SizedBox(width: 12),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const MyConsultationsScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 12),
         ],
       ),
       body: Column(
@@ -109,10 +120,12 @@ class _SpecialistsGridPageState extends State<SpecialistsGridPage> {
                   selected: active,
                   onSelected: (_) => setState(() => selectedChip = c),
                   selectedColor: Theme.of(context).colorScheme.primary,
-                  labelStyle:
-                      TextStyle(color: active ? Colors.white : Colors.black87),
+                  labelStyle: TextStyle(
+                    color: active ? Colors.white : Colors.black87,
+                  ),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 );
               },
             ),
@@ -134,13 +147,15 @@ class _SpecialistsGridPageState extends State<SpecialistsGridPage> {
                   return _SpecialistTile(
                     specialist: s,
                     onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => DoctorsListPage(
-                          headerYears: s.years,
-                          headerConsultations: 2000 + i * 137,
-                          filterSpecialty: s.specialtyBase,
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => DoctorsListPage(
+                            headerYears: s.years,
+                            headerConsultations: 2000 + i * 137,
+                            filterSpecialty: s.specialtyBase,
+                          ),
                         ),
-                      ));
+                      );
                     },
                   );
                 },
@@ -156,8 +171,11 @@ class _SpecialistsGridPageState extends State<SpecialistsGridPage> {
 class _SpecialistTile extends StatelessWidget {
   final Specialist specialist;
   final VoidCallback onTap;
-  const _SpecialistTile(
-      {super.key, required this.specialist, required this.onTap});
+  const _SpecialistTile({
+    super.key,
+    required this.specialist,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -183,23 +201,32 @@ class _SpecialistTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(specialist.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                specialist.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 6),
-              Text(specialist.specialty,
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w700)),
+              Text(
+                specialist.specialty,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(height: 6),
               Text('Experience', style: TextStyle(color: Colors.grey.shade600)),
-              Text('${specialist.years} Years',
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(
+                '${specialist.years} Years',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 6),
               Text('Patients', style: TextStyle(color: Colors.grey.shade600)),
-              Text(specialist.patients,
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(
+                specialist.patients,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             ],
           ),
         ),
@@ -326,9 +353,11 @@ class _DoctorsListPageState extends State<DoctorsListPage> {
       results =
           results.where((d) => d.languages.any(langFilters.contains)).toList();
     }
-    results.sort((a, b) => sort == SortBy.experience
-        ? b.experienceYears.compareTo(a.experienceYears)
-        : b.consultations.compareTo(a.consultations));
+    results.sort(
+      (a, b) => sort == SortBy.experience
+          ? b.experienceYears.compareTo(a.experienceYears)
+          : b.consultations.compareTo(a.consultations),
+    );
 
     final allLangs = {'English', 'Hindi', 'Punjabi', 'Gujarati'};
 
@@ -338,22 +367,25 @@ class _DoctorsListPageState extends State<DoctorsListPage> {
         title: Text(widget.filterSpecialty),
         actions: const [
           Padding(
-              padding: EdgeInsets.only(right: 12),
-              child: Icon(Icons.notifications_none))
+            padding: EdgeInsets.only(right: 12),
+            child: Icon(Icons.notifications_none),
+          ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
           _ExperiencePill(
-              years: widget.headerYears,
-              consultations: widget.headerConsultations),
+            years: widget.headerYears,
+            consultations: widget.headerConsultations,
+          ),
           const SizedBox(height: 10),
           // Filters row
           Card(
             margin: EdgeInsets.zero,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
               child: Column(
@@ -417,25 +449,30 @@ class _DoctorsListPageState extends State<DoctorsListPage> {
                         onChanged: (v) => setState(() => minYears = v),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 12),
           // Results
-          ...results.map((d) => Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: DoctorCard(doctor: d),
-              )),
+          ...results.map(
+            (d) => Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: DoctorCard(doctor: d),
+            ),
+          ),
           if (results.isEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 40),
               child: Center(
-                child: Text('No doctors match your filters',
-                    style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w600)),
+                child: Text(
+                  'No doctors match your filters',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
         ],
@@ -452,22 +489,29 @@ class _ExperiencePill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-          color: const Color(0xFFEFF6FF),
-          borderRadius: BorderRadius.circular(12)),
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(12),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       child: Row(
         children: [
-          Text('$years Year Experience',
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w700)),
+          Text(
+            '$years Year Experience',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(width: 8),
           const Text('•', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(width: 8),
-          Text('$consultations consultations',
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w700)),
+          Text(
+            '$consultations consultations',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
@@ -488,8 +532,9 @@ class DoctorCard extends StatelessWidget {
       shape: border,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => DoctorDetailsPage(doctor: doctor))),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => DoctorDetailsPage(doctor: doctor)),
+        ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
           child: Column(
@@ -526,8 +571,12 @@ class _Avatar extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child:
-              Image.network(photoUrl, width: 86, height: 86, fit: BoxFit.cover),
+          child: Image.network(
+            photoUrl,
+            width: 86,
+            height: 86,
+            fit: BoxFit.cover,
+          ),
         ),
         Positioned(
           right: 4,
@@ -558,10 +607,13 @@ class _MainInfo extends StatelessWidget {
       children: [
         Text('${doctor.name} .', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 2),
-        Text(doctor.specialty,
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w700)),
+        Text(
+          doctor.specialty,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         const SizedBox(height: 8),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -569,14 +621,18 @@ class _MainInfo extends StatelessWidget {
             const Icon(Icons.translate, size: 16, color: Colors.black54),
             const SizedBox(width: 6),
             Expanded(
-              child: Text(doctor.languages.join(', '),
-                  style: TextStyle(color: muted, fontWeight: FontWeight.w500)),
+              child: Text(
+                doctor.languages.join(', '),
+                style: TextStyle(color: muted, fontWeight: FontWeight.w500),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 6),
-        Text(doctor.degree,
-            style: TextStyle(color: muted, fontWeight: FontWeight.w500)),
+        Text(
+          doctor.degree,
+          style: TextStyle(color: muted, fontWeight: FontWeight.w500),
+        ),
         const SizedBox(height: 8),
         RichText(
           text: TextSpan(
@@ -584,8 +640,9 @@ class _MainInfo extends StatelessWidget {
             children: [
               const TextSpan(text: 'Expertise in: '),
               TextSpan(
-                  text: doctor.expertise,
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
+                text: doctor.expertise,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             ],
           ),
           maxLines: 2,
@@ -601,38 +658,50 @@ class _PriceAndCTA extends StatelessWidget {
   const _PriceAndCTA({required this.doctor});
   @override
   Widget build(BuildContext context) {
-    final priceStyle = Theme.of(context)
-        .textTheme
-        .titleLarge!
-        .copyWith(fontWeight: FontWeight.w900);
+    final priceStyle = Theme.of(
+      context,
+    ).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.w900);
     return Row(
       children: [
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Consultation Price:',
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Consultation Price:',
               style: TextStyle(
-                  color: Colors.grey.shade700, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 4),
-          Row(children: [
-            Text('₹${doctor.price}', style: priceStyle),
-            const SizedBox(width: 8),
-            Text('₹${doctor.mrp}',
-                style: const TextStyle(
-                  decoration: TextDecoration.lineThrough,
-                  color: Colors.black38,
-                  fontWeight: FontWeight.w600,
-                )),
-          ]),
-        ]),
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Text('₹${doctor.price}', style: priceStyle),
+                const SizedBox(width: 8),
+                Text(
+                  '₹${doctor.mrp}',
+                  style: const TextStyle(
+                    decoration: TextDecoration.lineThrough,
+                    color: Colors.black38,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         const Spacer(),
         SizedBox(
           width: 132,
           height: 44,
           child: FilledButton.tonal(
             onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => ConfirmPage(doctor: doctor))),
+              MaterialPageRoute(builder: (_) => ConfirmPage(doctor: doctor)),
+            ),
             style: FilledButton.styleFrom(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: const Text('Select'),
           ),
@@ -642,43 +711,106 @@ class _PriceAndCTA extends StatelessWidget {
   }
 }
 
-class ConfirmPage extends StatelessWidget {
+class ConfirmPage extends StatefulWidget {
   final Doctor doctor;
   const ConfirmPage({super.key, required this.doctor});
+
+  @override
+  State<ConfirmPage> createState() => _ConfirmPageState();
+}
+
+class _ConfirmPageState extends State<ConfirmPage> {
+  final TextEditingController _userName = TextEditingController(); // ✅ ADD
+  final TextEditingController _message = TextEditingController();
+  bool _loading = false;
+
+  Future<void> _submit() async {
+    if (_userName.text.trim().isEmpty || _message.text.trim().isEmpty) return;
+
+    setState(() => _loading = true);
+
+    try {
+      await FirebaseFirestore.instance.collection('consultations').add({
+        'userId': FirebaseAuth.instance.currentUser!.uid,
+        'userName': _userName.text.trim(),
+        'doctorName': widget.doctor.name,
+        'userMessage': _message.text.trim(),
+        'doctorReply': null,
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+        'repliedAt': null,
+      });
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Consultation submitted')));
+
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed: $e')));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _userName.dispose();
+    _message.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Confirm consultation')),
+      appBar: AppBar(title: const Text('Consult consultation')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(doctor.name, style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 8),
-              Text(doctor.specialty,
-                  style:
-                      TextStyle(color: Theme.of(context).colorScheme.primary)),
-              const SizedBox(height: 16),
-              Text('Consultation Price: ₹${doctor.price}',
-                  style: Theme.of(context).textTheme.titleMedium),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: FilledButton(
-                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Consultation booked (demo).'))),
-                  child: const Text('Confirm & Pay'),
-                ),
-              )
-            ]),
-          ),
+        child: Column(
+          children: [
+            Text(
+              widget.doctor.name,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+
+// 👤 USER NAME FIELD (NEW)
+            TextField(
+              controller: _userName,
+              decoration: const InputDecoration(
+                labelText: 'Full Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+// 💬 MESSAGE FIELD (UNCHANGED)
+            TextField(
+              controller: _message,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: 'Describe your problem',
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: FilledButton(
+                onPressed: _loading ? null : _submit,
+                child: _loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Submit Consultation'),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -701,37 +833,46 @@ class DoctorDetailsPage extends StatelessWidget {
                 tag: 'doc_${doctor.name}',
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(doctor.photoUrl,
-                      width: 96, height: 96, fit: BoxFit.cover),
+                  child: Image.network(
+                    doctor.photoUrl,
+                    width: 96,
+                    height: 96,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(doctor.specialty,
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 6),
-                      Text('Languages: ${doctor.languages.join(', ')}'),
-                      const SizedBox(height: 6),
-                      Text('Degree: ${doctor.degree}'),
-                      const SizedBox(height: 6),
-                      Text('Experience: ${doctor.experienceYears} years'),
-                      const SizedBox(height: 6),
-                      Text('Consultations: ${doctor.consultations}+'),
-                    ]),
-              )
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      doctor.specialty,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text('Languages: ${doctor.languages.join(', ')}'),
+                    const SizedBox(height: 6),
+                    Text('Degree: ${doctor.degree}'),
+                    const SizedBox(height: 6),
+                    Text('Experience: ${doctor.experienceYears} years'),
+                    const SizedBox(height: 6),
+                    Text('Consultations: ${doctor.consultations}+'),
+                  ],
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          Text('Expertise',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium!
-                  .copyWith(fontWeight: FontWeight.w800)),
+          Text(
+            'Expertise',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 8),
           Text(doctor.expertise),
         ],
